@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--请优先配置 Functions 节点-->
+<Modbus>
+  <DeviceList>
+    <Device Key="RoomDev" Text="手术室辅助控制模块" IP="192.168.12.200" Address="1" Port="502"/>
+    <Device Key="AirCondition" Text="空调机组模块" IP="192.168.1.56" Address="2" Port="502"/>
+  </DeviceList>
+  <LedMenuList>
+    <Menu Key="LAMP1" Text="照明1" ICO="1.png"/>
+    <Menu Key="LAMP2" Text="照明2" ICO="2.png"/>
+    <Menu Key="ExhaustFan" Text="排风机" ICO="3.png"/>
+    <Menu Key="ExhaustGas" Text="排废气" ICO="4.png"/>
+    <Menu Key="Viewbox" Text="观片灯" ICO="5.png"/>
+    <Menu Key="ORLED1" Text="无影灯1" ICO="5.png"/>
+    <Menu Key="ORLED2" Text="无影灯2" ICO="5.png"/>
+    <Menu Key="ShadowlessLamp" Text="手术照明灯" ICO="6.png"/>
+    <Menu Key="LED7" Text="手术辅助照明灯" ICO="7.png"/>
+  </LedMenuList>
+  <WarmingList>
+    <Menu Key="Warming1" Text="消防报警" ICO="10.png"/>
+    <Menu Key="Warming2" Text="IT电源正常" ICO="power.png"/>
+  </WarmingList>
+  <GasList>
+    <Gas Key="g1" Text="氧气" ICO="1.png"/>
+    <Gas Key="g2" Text="压缩空气" ICO="2.png"/>
+    <Gas Key="g3" Text="氮气" ICO="3.png"/>
+    <Gas Key="g4" Text="二氧化碳" ICO="4.png"/>
+    <Gas Key="g5" Text="笑气" ICO="5.png"/>
+    <Gas Key="g6" Text="负压吸引" ICO="6.png"/>
+    <Gas Key="g7" Text="氩气" ICO="7.png"/>
+  </GasList>
+  <CoilList>
+    <Coil Key="LAMP1" Text="照明1" Address="22" Reserve="27" DeviceAddress="1"/>
+    <Coil Key="LAMP2" Text="照明2" Address="23" Reserve="28" DeviceAddress="1"/>
+    <Coil Key="ExhaustFan" Text="排风机" Address="29"  DeviceAddress="1"/>
+    <Coil Key="ExhaustGas" Text="排废气" Address="30"  DeviceAddress="1"/>
+    <Coil Key="Viewbox" Text="观片灯" Address="26"  DeviceAddress="1"/>
+    <Coil Key="ORLED1" Text="无影灯1" Address="125"  DeviceAddress="1"/>
+    <Coil Key="ORLED2" Text="无影灯2" Address="126"  DeviceAddress="1"/>
+    <Coil Key="ShadowlessLamp" Text="手术照明灯" Address="24"  DeviceAddress="1"/>
+    <Coil Key="LED7" Text="手术辅助照明灯" Address="25"  DeviceAddress="1"/>
+
+    <Coil Key="LampBack1" Text="备用1开关" Address="27" DeviceAddress="1"/>
+    <Coil Key="LampBack2" Text="备用2开关" Address="28" DeviceAddress="1"/>
+    
+    <Coil Key="Warming1" Text="消防报警" Address="22" Reserve="27" DeviceAddress="1"/>
+    <Coil Key="Warming2" Text="IT电源正常" Address="22" Reserve="27" DeviceAddress="1"/>
+    
+    <Coil Key="Oxygen" Text="氧气压力指示灯" Address="32"  DeviceAddress="1"/>
+    <Coil Key="CompressedAir" Text="压缩空气指示灯" Address="35"  DeviceAddress="1"/>
+    <Coil Key="NegativePressure" Text="负压吸引指示灯" Address="38"  DeviceAddress="1"/>
+    <Coil Key="NitrousOxide" Text="笑气指示灯" Address="41"  DeviceAddress="1"/>
+    <Coil Key="Nitrogen" Text="氮气指示灯" Address="44"  DeviceAddress="1"/>
+    <Coil Key="Argon" Text="氩气指示灯" Address="25"  DeviceAddress="1"/>
+    <Coil Key="CarbonDioxide" Text="二氧化碳指示灯" Address="47"  DeviceAddress="1"/>
+    <Coil Key="Spare1" Text="备用1指示灯" Address="50"  DeviceAddress="1"/>
+    <Coil Key="Spare2" Text="备用2指示灯" Address="53"  DeviceAddress="1"/>
+    <Coil Key="GasWarming" Text="气体报警止响开关" Address="56"  DeviceAddress="1"/>
+  </CoilList>
+  <RegisterList>
+    <Register Key="BeiJingWeek" Text="北京时间星期" Address="1"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingSecond" Text="北京时间秒" Address="2"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingMinute" Text="北京时间分" Address="3"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingHour" Text="北京时间时" Address="4"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingDay" Text="北京时间日" Address="5"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingMonth" Text="北京时间月" Address="6"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingYear" Text="北京时间年" Address="7"  AType="Register" DeviceAddress="1"/>
+    <Register Key="BeiJingCount" Text="北京时间校准次数" Address="8"  AType="Register" DeviceAddress="1"/>
+    
+    <Register Key="ASecond" Text="麻醉秒" Address="9"  AType="Register" DeviceAddress="1"/>
+    <Register Key="AMinute" Text="麻醉分" Address="10"  AType="Register" DeviceAddress="1"/>
+    <Register Key="AHour" Text="麻醉时" Address="11"  AType="Register" DeviceAddress="1"/>
+  
+    <Register Key="OSecond" Text="手术秒" Address="13"  AType="Register" DeviceAddress="1"/>
+    <Register Key="OMinute" Text="手术分" Address="14"  AType="Register" DeviceAddress="1"/>
+    <Register Key="OHour" Text="手术时" Address="15"  AType="Register" DeviceAddress="1"/>
+  
+    <Register Key="LED1Adjust" Text="照明灯1亮度调节" Address="21"  AType="Register" Reserve="25" DeviceAddress="1"/>
+    <Register Key="LED2Adjust" Text="照明灯2亮度调节" Address="22"  AType="Register" Reserve="26" DeviceAddress="1"/>
+    <Register Key="OAdjust" Text="手术灯亮度调节" Address="21"  AType="Register" DeviceAddress="1"/>
+    <Register Key="AccessorialAdjust" Text="手术辅助灯亮度调节" Address="21"  AType="Register" DeviceAddress="1"/>
+  </RegisterList>
+</Modbus>

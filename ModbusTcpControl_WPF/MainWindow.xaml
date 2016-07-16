@@ -1,0 +1,855 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ModbusTcpControl_WPF"
+        xmlns:ViewModel="clr-namespace:ModbusTcpControl_WPF.ViewModel"
+        xmlns:EB="clr-namespace:ExtendedButton;assembly=ExtendedButton" 
+        xmlns:CusConvert="clr-namespace:Song.Convert" 
+        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" 
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        x:Class="ModbusTcpControl_WPF.MainWindow"
+        mc:Ignorable="d"
+        x:Name="main"
+        Title="MainWindow" Height="768" Width="1024" ResizeMode="NoResize"
+    >
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding ClosedCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ControlTemplate x:Key="ImageButtonControlTemplate" TargetType="{x:Type Button}">
+                <StackPanel x:Name="sp" RenderTransformOrigin="0.5,0.5">
+                    <StackPanel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="2" ScaleY="2"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </StackPanel.RenderTransform>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="MouseOver"/>
+                            <VisualState x:Name="Pressed">
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="border">
+                                        <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </VisualState>
+                            <VisualState x:Name="Disabled"/>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Image x:Name="image" MaxWidth="30" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="textBox" Background="Transparent" BorderThickness="0" TextWrapping="NoWrap" Text="{TemplateBinding Content}" FontFamily="YouYuan" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" d:LayoutOverrides="LeftPosition, RightPosition"/>
+                </StackPanel>
+            </ControlTemplate>
+
+            <LinearGradientBrush x:Key="TButtonNormalBackground" EndPoint="0,1" StartPoint="0,0">
+                <GradientStop Color="#F3F3F3" Offset="0"/>
+                <GradientStop Color="#EBEBEB" Offset="0.5"/>
+                <GradientStop Color="#DDDDDD" Offset="0.5"/>
+                <GradientStop Color="#CDCDCD" Offset="1"/>
+            </LinearGradientBrush>
+
+            <RadialGradientBrush x:Key="TButtonCheckedBackground">
+                <GradientStop Color="#FFFF00" Offset="0"/>
+                <GradientStop Color="#6666FF" Offset="0.318"/>
+            </RadialGradientBrush>
+
+            <Style x:Key="CControlBtStyle" TargetType="{x:Type Button}">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="FontSize" Value="8"/>
+                <!--修改模板属性-->
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <!--控件模板-->
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <!--背景色-->
+                            <Border x:Name="back" Opacity="1" CornerRadius="10">
+                                <!--前景色及边框-->
+                                <Border x:Name="fore" CornerRadius="10">
+                                    <!--按钮内容-->
+                                    <StackPanel>
+                                        <Image Source="Pictures/10.png" Height="25"/>
+                                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Content}">
+                                            <!--<ContentPresenter.BitmapEffect>
+                                                <DropShadowBitmapEffect Color="#000" Direction="-90" ShadowDepth="2" Softness="0.1" Opacity="0.3" />
+                                            </ContentPresenter.BitmapEffect>-->
+                                        </ContentPresenter>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+                            <!--触发器-->
+                            <ControlTemplate.Triggers>
+                                <!--鼠标移入移出-->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation To="6" Duration="0:0:0.2" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <ColorAnimation To="#AFFF" BeginTime="0:0:0.2" Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation To="#3FFF" BeginTime="0:0:0.2" Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:0.2" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <ColorAnimation Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                                <!--按钮按下弹起-->
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation To="3" Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <ColorAnimation To="#3AAA" Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation To="#2111" Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                                <!--按钮失效-->
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation To="0" Duration="0:0:0.3" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <DoubleAnimation To="1" Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Opacity)" />
+                                                <DoubleAnimation To="-135" Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Direction)" />
+                                                <ColorAnimation To="#FFF" Duration="0:0:0.3" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Color)" />
+                                                <ColorAnimation To="#D555" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" />
+                                                <ColorAnimation To="#CEEE" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation To="#CDDD" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(UIElement.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                                <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Opacity)" />
+                                                <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Direction)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(UIElement.BitmapEffect).(DropShadowBitmapEffect.Color)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                                <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(GradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                    <Setter Property="Foreground" Value="#B444"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <EB:VisibilityConvertor x:Key="VisibilityConvertor"/>
+            <CusConvert:Bool2CorlorBrushConverter x:Key="Bool2CorlorBrushConverter"/>
+            <CusConvert:Status2CorlorBrushConverter x:Key="Status2CorlorBrushConverter"/>
+            <CusConvert:boolConverter x:Key="boolConverter"/>
+
+            <Style x:Key="ButtonZoomStyle" TargetType="Button">
+                <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TransformGroup>
+                            <!-- 很重要 ， 不然故事吧找不到属性 -->
+                            <RotateTransform x:Name="rt"/>
+                            <ScaleTransform  x:Name="st"/>
+                        </TransformGroup>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation From="0.7" To="0.9" Duration="0:0:1" 
+                Storyboard.TargetProperty="(Button.Opacity)" />
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                From="1" To="1.7" Duration="0:0:2">
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                From="1" To="1.7" Duration="0:0:2" >
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation From="0.7" To="0.9" Duration="0:0:1" 
+                Storyboard.TargetProperty="(Image.Opacity)" />
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                From="1.7" To="1" Duration="0:0:2">
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                From="1.7" To="1" Duration="0:0:2" >
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="VerticalAlignmentStyle" TargetType="{x:Type EB:ImageButton}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type EB:ImageButton}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="75*"/>
+                                    <RowDefinition Height="25*"/>
+                                </Grid.RowDefinitions>
+                                <Image 
+                                   Source="{TemplateBinding Image}"
+                                   Stretch="Uniform"
+                                   Visibility="{TemplateBinding Image,Converter={StaticResource VisibilityConvertor}}"
+                                   VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Text="{TemplateBinding Content}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Margin" Value="-5" />
+                                    <Setter Property="Background" Value="Blue" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="HorizontalStyle" TargetType="{x:Type EB:ImageButton}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type EB:ImageButton}">
+                            <Grid x:Name="grid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="75*"/>
+                                    <ColumnDefinition Width="25*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image
+            						Source="{TemplateBinding Image}"
+            						Stretch="Uniform"
+            						Visibility="{TemplateBinding Image, Converter={StaticResource VisibilityConvertor}}"
+            						VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{TemplateBinding Content}" TextWrapping="Wrap"
+            						HorizontalAlignment="Center"
+            						VerticalAlignment="Center"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Background" TargetName="grid" Value="Yellow"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="False">
+                                    <Setter Property="Background" TargetName="grid" Value="#00000000"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Margin" Value="-5" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="AirButton" TargetType="{x:Type Button}">
+                <Setter Property="FocusVisualStyle">
+                    <Setter.Value>
+                        <Style>
+                            <Setter Property="Control.Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Width" Value="95"/>
+                <Setter Property="Height" Value="45"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="#FF707070"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="1"/>
+                <Setter Property="Margin" Value="-5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1" CornerRadius="10" Name="PART_Background">
+                                <ContentPresenter Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="AdjustButton" TargetType="{x:Type Button}">
+                <Setter Property="RenderTransformOrigin" Value=".5,.5"/>
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TransformGroup>
+                            <!-- 很重要 ， 不然故事吧找不到属性 -->
+                            <RotateTransform x:Name="rt"/>
+                            <ScaleTransform  x:Name="st"/>
+                        </TransformGroup>
+                    </Setter.Value>
+                </Setter>
+
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="Height" Value="45"/>
+                <Setter Property="Width" Value="45"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="1"/>
+                <Setter Property="Margin" Value="20,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <ControlTemplate.Resources>
+                                <Storyboard x:Key="OnMouseDown1">
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="PART_Background">
+                                        <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1.2"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="PART_Background">
+                                        <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1.2"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                                <Storyboard x:Key="OnMouseUp1">
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="PART_Background">
+                                        <EasingDoubleKeyFrame KeyTime="0" Value="1.2"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="PART_Background">
+                                        <EasingDoubleKeyFrame KeyTime="0" Value="1.2"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </ControlTemplate.Resources>
+                            <Border BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1" CornerRadius="33,33,33,33" Name="PART_Background" RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                                <ContentPresenter Content="{TemplateBinding ContentControl.Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <EventTrigger RoutedEvent="ButtonBase.Click">
+                                    <BeginStoryboard Storyboard="{StaticResource OnMouseDown1}"/>
+                                    <BeginStoryboard x:Name="OnMouseUp1_BeginStoryboard" Storyboard="{StaticResource OnMouseUp1}"/>
+                                </EventTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <RadialGradientBrush>
+                                                <GradientStop Color="Black" Offset="0"/>
+                                                <GradientStop Color="#FF15B1F9" Offset="1"/>
+                                            </RadialGradientBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation From="0.7" To="0.9" Duration="0:0:0.5" 
+                Storyboard.TargetProperty="(Button.Opacity)" />
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                From="1" To="1.2" Duration="0:0:0.5">
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                From="1" To="1.2" Duration="0:0:0.5" >
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation From="0.7" To="0.9" Duration="0:0:0.5" 
+                Storyboard.TargetProperty="(Image.Opacity)" />
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                                From="1.2" To="1" Duration="0:0:0.5">
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation 
+                                Storyboard.TargetProperty="(Button.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                                From="1.2" To="1" Duration="0:0:0.5" >
+                                    <DoubleAnimation.EasingFunction>
+                                        <ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="StatusButton" TargetType="{x:Type ToggleButton}">
+                <Setter Property="IsEnabled" Value="False"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                            <UniformGrid Columns="1">
+                                <Border Width="25" Height="25" CornerRadius="12.5"
+                                    Background="{TemplateBinding Property=IsChecked,Converter={StaticResource Bool2CorlorBrushConverter}}" >
+                                </Border>
+                                <TextBlock Text="{TemplateBinding Content}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                            </UniformGrid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.DataContext>
+        <ViewModel:MainViewModel/>
+    </Window.DataContext>
+    <Grid Background="#FFEFF4F9">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="60*"/>
+            <RowDefinition Height="10*" MinHeight="25"/>
+        </Grid.RowDefinitions>
+        <Label Content="{Binding Title}" FontSize="48" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <UniformGrid Grid.Row="1" Rows="1" Columns="3" x:Name="timingGrid" TextElement.FontSize="36">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="45"/>
+                </Grid.RowDefinitions>
+                <Border CornerRadius="5">
+                    <Border.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="LightBlue" Offset="0"/>
+                            <GradientStop Color="#FF5699F9" Offset="0.5"/>
+                            <GradientStop Color="Blue" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25*"/>
+                            <RowDefinition Height="75*"/>
+                        </Grid.RowDefinitions>
+                        <Border Background="Transparent" TextBlock.FontSize="14">
+                            <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Image Source="Pictures/alarm_clock.png"/>
+                                <TextBlock Margin="10,0,0,0" Text="手术正计时 OPERATION TIMING" TextAlignment="Center" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                        </Border>
+                        <Border Grid.Row="1">
+                            <StackPanel x:Name="timgSP" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="OperationPTime.Hour.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="OperationPTime.Minute.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="OperationPTime.Second.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+                <Border Margin="5,0,5,0" Grid.Row="1">
+                    <UniformGrid Rows="1">
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="启动" Image="Pictures/ic_play.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Top" FontSize="10" 
+							Command="{Binding OperationPTime.StartCommand}"
+                                        />
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="暂停" Image="Pictures/ic_pause.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+							Command="{Binding OperationPTime.PauseCommand}"
+                                        />
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="复位" Image="Pictures/In.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+							Command="{Binding OperationPTime.ResetCommand}"
+                                        />
+                    </UniformGrid>
+                </Border>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="45"/>
+                </Grid.RowDefinitions>
+                <Border  CornerRadius="5">
+                    <Border.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="LightGreen" Offset="0"/>
+                            <GradientStop Color="#FF8B9AAE" Offset="0.5"/>
+                            <GradientStop Color="Green" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25*"/>
+                            <RowDefinition Height="75*"/>
+                        </Grid.RowDefinitions>
+                        <Border Background="Transparent" TextBlock.FontSize="14">
+                            <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Image Source="Pictures/alarm_clock.png" />
+                                <TextBlock Margin="10,0,0,0" Text="麻醉倒计时 ANESTHESIOLOGY COUNTDOWN" TextAlignment="Center" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                        </Border>
+                        <Border Grid.Row="1">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="AnesthesiologyNTime.Hour.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="AnesthesiologyNTime.Minute.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="AnesthesiologyNTime.Second.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+                <Border Margin="5,0,5,0" Grid.Row="1">
+                    <UniformGrid Rows="1">
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="启动" Image="Pictures/ic_play.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+							Command="{Binding AnesthesiologyNTime.StartCommand}"
+                                        />
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="暂停" Image="Pictures/ic_pause.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+							Command="{Binding AnesthesiologyNTime.PauseCommand}"
+                                        />
+                        <EB:ImageButton Style="{StaticResource VerticalAlignmentStyle}" Content="复位" Image="Pictures/In.png"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+							Command="{Binding AnesthesiologyNTime.ResetCommand}"
+                                        />
+                    </UniformGrid>
+                </Border>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="103*"/>
+                    <RowDefinition Height="45*"/>
+                </Grid.RowDefinitions>
+                <Border  CornerRadius="5">
+                    <Border.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Yellow" Offset="0"/>
+                            <GradientStop Color="#FFC2E466" Offset="0.5"/>
+                            <GradientStop Color="Yellow" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25*"/>
+                            <RowDefinition Height="75*"/>
+                        </Grid.RowDefinitions>
+                        <Border Background="Transparent" TextBlock.FontSize="14">
+                            <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Image Source="Pictures/overtime.png" />
+                                <TextBlock Margin="10,0,0,0" Text="时间 TIMING" TextAlignment="Center" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                        </Border>
+                        <Border Grid.Row="1">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="Date.Hour.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="Date.Minute.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock><Run Text=":"/></TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <Binding Path="Date.Second.Data" StringFormat="{}{0:D2}"/>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+                <Border Margin="5,0,5,0" Grid.Row="1" TextBlock.FontSize="24">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="Date.Year.Data" StringFormat="{}{0:D2}"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Text="年"/>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="Date.Month.Data" StringFormat="{}{0:D2}"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Text="月"/>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="Date.Day.Data" StringFormat="{}{0:D2}"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Text="日"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </UniformGrid>
+        <UniformGrid Grid.Row="2" Rows="1" x:Name="controlGrid" TextElement.FontSize="18" Margin="5">
+            <Border CornerRadius="10" Background="#FF4BDE43" Margin="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="20*"/>
+                        <RowDefinition Height="20*"/>
+                        <RowDefinition Height="30*"/>
+                        <RowDefinition Height="20*"/>
+                    </Grid.RowDefinitions>
+                    <Label Margin="10" HorizontalAlignment="Center" Content="空调系统 AIR-CONDITION SYSTEM"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" TextBlock.TextAlignment="Center" HorizontalAlignment="Center">
+                        <Button Content="-" Style="{DynamicResource AdjustButton}"/>
+                        <TextBlock VerticalAlignment="Center"><Run Text="温度:"/></TextBlock>
+                        <TextBlock MinWidth="100" VerticalAlignment="Center" FontSize="28"><Run Text="{Binding Ac.Template.Data}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center"><Run Text="℃"/></TextBlock>
+                        <Button Content="+" Style="{DynamicResource AdjustButton}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" TextBlock.TextAlignment="Center"  HorizontalAlignment="Center">
+                        <Button Content="-" Style="{DynamicResource AdjustButton}"/>
+                        <TextBlock VerticalAlignment="Center"><Run Text="湿度:"/></TextBlock>
+                        <TextBlock MinWidth="100" VerticalAlignment="Center" FontSize="28"><Run Text="{Binding Ac.Humidity.Data}"/></TextBlock>
+                        <TextBlock VerticalAlignment="Center"><Run Text="℃"/></TextBlock>
+                        <Button Content="+" Style="{DynamicResource AdjustButton}"/>
+                    </StackPanel>
+                    <UniformGrid Grid.Row="3" Rows="1">
+                        <ToggleButton Content="系统正常" Style="{DynamicResource StatusButton}" IsChecked="{Binding Ac.SysNormal.Data,Converter={StaticResource boolConverter}}"/>
+                        <ToggleButton Content="值班" Style="{DynamicResource StatusButton}" IsChecked="{Binding Ac.OnDuty.Data,Converter={StaticResource boolConverter}}"/>
+                        <ToggleButton Content="系统故障" Style="{DynamicResource StatusButton}" IsChecked="{Binding Ac.SysException.Data,Converter={StaticResource boolConverter}}"/>
+                        <ToggleButton Content="高效堵塞" Style="{DynamicResource StatusButton}" IsChecked="{Binding Ac.HepaBlock.Data,Converter={StaticResource boolConverter}}"/>
+                        <ToggleButton Content="负压运行" Style="{DynamicResource StatusButton}" IsChecked="{Binding Ac.NegativePressure.Data,Converter={StaticResource boolConverter}}"/>
+                    </UniformGrid>
+                    <UniformGrid Grid.Row="4" Rows="1">
+                        <Button Style="{DynamicResource AirButton}" Content="空调启停" Background="Transparent" Command="{Binding Ac.StartStopCommand}"/>
+                        <Button Style="{DynamicResource AirButton}" Content="空调值班" Background="Transparent" Command="{Binding Ac.DutyCommand}"/>
+                        <Button Style="{DynamicResource AirButton}" Content="正负压" Background="Transparent" Command="{Binding Ac.PNPressureCommand}"/>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+            <Border CornerRadius="10" Background="#FF4BDE43" Margin="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <ItemsControl Background="Transparent" ItemsSource="{Binding GaspList}" BorderThickness="2,1,1,1" BorderBrush="AliceBlue" FocusVisualStyle="{x:Null}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="back"  FocusVisualStyle="{x:Null}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Text}"/>
+                                        <Border Margin="10,0" Width="75" Height="20" CornerRadius="10" Background="{Binding Data.Data,Converter={StaticResource Status2CorlorBrushConverter}}" >
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="2"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <UniformGrid Grid.Row="1" Rows="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="75" Background="Yellow" CornerRadius="10" Height="20" />
+                            <TextBlock Text="---正常"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="75" Background="Red" CornerRadius="10" Height="20" />
+                            <TextBlock Text="---过高"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="75" Background="Green" CornerRadius="10" Height="20" />
+                            <TextBlock Text="---过低"/>
+                        </StackPanel>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+        </UniformGrid>
+        <Grid Grid.Row="3" Background="#FF3599DE" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="70*"/>
+            </Grid.ColumnDefinitions>
+            <Border CornerRadius="20" Background="#FF547C97">
+                <ItemsControl Background="Transparent" ItemsSource="{Binding WarmingList}" FocusVisualStyle="{x:Null}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="10" x:Name="back"  FocusVisualStyle="{x:Null}">
+                                <EB:ImageButton Style="{DynamicResource HorizontalStyle}" Content="{Binding Text}" Image="{Binding ICO}"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center" FontSize="10" 
+                                        />
+                            </Border>
+                            <DataTemplate.Triggers>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Border>
+            <Border Grid.Column="1" CornerRadius="10" BorderThickness="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="75*"/>
+                        <RowDefinition Height="25*"/>
+                    </Grid.RowDefinitions>
+                    <Image Source="Pictures/pad.png" Margin="0,3,0,-3"/>
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="综合控制"/>
+                </Grid>
+            </Border>
+            <Border Grid.Column="2" CornerRadius="20" Background="#FF547C97">
+                <ItemsControl Background="Transparent" ItemsSource="{Binding LedList}" FocusVisualStyle="{x:Null}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="10" x:Name="back"  
+                                    FocusVisualStyle="{x:Null}" 
+                                    Margin="10,0"
+                                    >
+                                <Grid Background="{x:Null}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70*"/>
+                                        <RowDefinition Height="30*"/>
+                                    </Grid.RowDefinitions>
+                                    <Image Stretch="Uniform" Source="{Binding ICO}"/>
+                                    <ToggleButton x:Name="tgb" IsChecked="{Binding Data.Data,Converter={StaticResource boolConverter}}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"
+									Content="{Binding Text}" 
+									Command="{Binding SendCommand}"
+                                    >
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Margin" Value="-5" TargetName="back"/>
+                                </Trigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Border>
+        </Grid>
+
+    </Grid>
+</Window>

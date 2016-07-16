@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="ModbusTcpControl_WPF.TimingCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ModbusTcpControl_WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="250"
+             x:Name="timgcardcontrol">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="45"/>
+        </Grid.RowDefinitions>
+        <Border  CornerRadius="5">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="LightBlue" Offset="0"/>
+                    <GradientStop Color="#FF5699F9" Offset="0.5"/>
+                    <GradientStop Color="Blue" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="75*"/>
+                </Grid.RowDefinitions>
+                <Border Background="AliceBlue" Margin="0,10,0,1">
+                    <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="Pictures/10.png" ></Image>
+                        <TextBlock Text="手术正计时OPERATION TIMING" TextAlignment="Center" VerticalAlignment="Center"/>
+                    </WrapPanel>
+                </Border>
+                <Border x:Name="timgBd" TextElement.FontSize="36" Grid.Row="1">
+                    <StackPanel x:Name="timgSP" Orientation="Horizontal" TextBlock.LineHeight="{Binding timgBd.Height}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock x:Name="hourTb" Text="00"/>
+                        <TextBlock>:</TextBlock>
+                        <TextBlock x:Name="minTb" Text="00"/>
+                        <TextBlock>:</TextBlock>
+                        <TextBlock x:Name="secTb" Text="00"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+        <Border Margin="5,0,5,0" Grid.Row="1">
+            <UniformGrid Rows="1" Columns="3">
+                <Button x:Name="startBt">启动</Button>
+                <Button x:Name="pauseBt">暂停</Button>
+                <Button x:Name="resetBt">复位</Button>
+            </UniformGrid>
+        </Border>
+    </Grid>
+</UserControl>
